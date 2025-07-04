@@ -1,44 +1,20 @@
----
-- name: Configure Docker on EC2 Instances
-  hosts: slave_node
+- name : Configure Docker on EC2 Instances
+  hosts : all
   become: true
-  become_method: sudo
+  connection : ssh
+  tasks : 
+  - name: updating apt
+    command : sudo apt-get update
 
-  tasks:
-    - name: Install prerequisites
-      apt:
-        name:
-          - apt-transport-https
-          - ca-certificates
-          - curl
-          - software-properties-common
-        state: present
-        update_cache: yes
+  - name : Install Docker
+    command : sudo apt-get install -y docker.io
+    become : yes
+    become_user : root
 
-    - name: Add Docker GPG key
-      ansible.builtin.apt_key:
-        url: https://download.docker.com/linux/ubuntu/gpg
-        state: present
+  - name : Start Docker Service
+    command : sudo systemctl start docker
+    become : yes
+    become_user : root
 
-    - name: Add Docker official repository
-      apt_repository:
-        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
-        state: present
-
-    - name: Update apt again
-      apt:
-        update_cache: yes
-
-    - name: Install Docker CE (Community Edition)
-      apt:
-        name:
-          - docker-ce
-          - docker-ce-cli
-          - containerd.io
-        state: latest
-
-    - name: Start and enable Docker
-      systemd:
-        name: docker
-        state: started
-        enabled: yes
+  - name: Deploy Docker Container
+    command: docker run -itd -p 8084:8082 preddy1725/health-care
