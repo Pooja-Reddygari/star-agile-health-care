@@ -2,6 +2,7 @@
 - name: Configure Docker on EC2 Instances
   hosts: slave_node
   become: true
+  become_method: sudo
 
   tasks:
     - name: Install prerequisites
